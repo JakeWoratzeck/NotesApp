@@ -8,16 +8,22 @@
 
 import UIKit
 
-class SingleNoteViewController: UIViewController {
+class SingleNoteViewController: UIViewController, UITextViewDelegate {
     
     
     @IBOutlet weak var titleTextField: UITextField!
     @IBOutlet weak var bodyTextField: UITextView!
     
+    var existingNote: Note?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
         titleTextField.delegate = self
+        bodyTextField.delegate = self
+        
+        titleTextField.text = existingNote?.title
+        bodyTextField.text = existingNote?.body
         
     }
     
@@ -31,7 +37,31 @@ class SingleNoteViewController: UIViewController {
     }
     
     @IBAction func saveNote(_ sender: Any) {
+        let title = titleTextField.text
+        let body = bodyTextField.text
         
+        var note: Note?
+        
+        if let existingNote = existingNote {
+            existingNote.title = title
+            existingNote.body = body
+            
+            note = existingNote
+        } else {
+            note = Note(title: title, body: body)
+        }
+    
+        if let note = note {
+            do {
+                let managedContext = note.managedObjectContext
+                
+                try managedContext?.save()
+                
+                self.navigationController?.popViewController(animated: true)
+            } catch {
+                print("Context could not be saved")
+            }
+        }
     }
 }
 
